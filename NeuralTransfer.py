@@ -30,26 +30,6 @@ class NeuralTransfer():
         i_j = tf.cast(input_shape[1]*input_shape[2], tf.float32)
         return gram_matrix/i_j
 
-    def LoadVgg(self):
-        model = tf.keras.applications.vgg19.VGG19(
-            include_top=True, weights=None)
-        model.load_weights("./modelWeights/VGG19_Model_Weights.h5")
-        model.trainable = False
-        # Model layers for content and style transfer using A Neural Algorithm of Artistic Style
-        content_layers = ["block4_conv2"]
-        style_layers = ["block1_conv1", "block2_conv1",
-                        "block3_conv1", "block4_conv1", "block5_conv1"]
-        content_output = model.get_layer(content_layers[0]).output
-        style_output = [model.get_layer(
-            style_layer).output for style_layer in style_layers]
-        gram_style_output = [self.gram_matrix(
-            output) for output in style_output]
-
-        StylizationModel = Model(
-            [model.input], [content_output, gram_style_output])
-
-        return StylizationModel
-
     def lossFunction(self, style_outputs, content_outputs, style_target, content_target):
         content_loss = tf.reduce_mean((content_outputs - content_target)**2)
         style_loss = tf.add_n([tf.reduce_mean((output_ - target_)**2)
